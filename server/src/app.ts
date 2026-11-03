@@ -10,6 +10,16 @@ const app = express();
 
 app.use(helmet());
 app.use(cors({ origin: env.clientOrigins }));
+app.use('/api/auth', express.text({ type: 'text/plain', limit: '2mb' }), (req, res, next) => {
+  if (typeof req.body !== 'string') return next();
+
+  try {
+    req.body = JSON.parse(req.body);
+    next();
+  } catch {
+    return res.status(400).json({ message: 'Некорректный формат запроса' });
+  }
+});
 app.use(express.json({ limit: '2mb' }));
 
 app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));

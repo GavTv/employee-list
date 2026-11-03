@@ -6,11 +6,11 @@ export class ApiError extends Error {
   constructor(message: string, public readonly status: number) { super(message); this.name = 'ApiError'; }
 }
 
-export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
+export async function api<T>(path: string, init: RequestInit = {}, options: { requiresAuth?: boolean } = {}): Promise<T> {
   const token = getToken();
   const headers = new Headers(init.headers);
-  if (init.body) headers.set('Content-Type', 'application/json');
-  if (token) headers.set('Authorization', `Bearer ${token}`);
+  if (init.body && !headers.has('Content-Type')) headers.set('Content-Type', 'application/json');
+  if (token && options.requiresAuth !== false) headers.set('Authorization', `Bearer ${token}`);
   const timeoutController = new AbortController();
   const timeoutId = window.setTimeout(() => timeoutController.abort(), 15_000);
 

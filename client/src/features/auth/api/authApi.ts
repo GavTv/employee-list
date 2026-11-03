@@ -7,5 +7,6 @@ export const authApi = {
     api<{ token: string }>(`/auth/${mode}`, {
       method: 'POST',
       body: JSON.stringify(credentials),
-    }),
+      headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+    }, { requiresAuth: false }),
 };
