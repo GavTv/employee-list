@@ -5,7 +5,13 @@ import Database from 'better-sqlite3';
 const dataDirectory = path.resolve(__dirname, '../../data');
 fs.mkdirSync(dataDirectory, { recursive: true });
 
-export const db = new Database(path.join(dataDirectory, 'employees.sqlite'));
+const databasePath = path.join(dataDirectory, 'employees.sqlite');
+const templatePath = path.join(dataDirectory, 'employees.template.sqlite');
+if (!fs.existsSync(databasePath) && fs.existsSync(templatePath)) {
+  fs.copyFileSync(templatePath, databasePath);
+}
+
+export const db = new Database(databasePath);
 db.pragma('journal_mode = WAL');
 db.pragma('foreign_keys = ON');
 

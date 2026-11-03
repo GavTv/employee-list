@@ -96,6 +96,7 @@ interface ProfileDropdownProps
   holdDuration?: number;
   showStatus?: boolean;
   showTheme?: boolean;
+  compactTrigger?: boolean;
 }
 
 const SAMPLE_ACCOUNTS: Account[] = [
@@ -306,7 +307,7 @@ function Identity({
   shared: boolean;
   account: Account;
   tone: number;
-  status: AccountStatus;
+  status?: AccountStatus;
   transition: Transition;
   stacked: boolean;
 }) {
@@ -634,6 +635,7 @@ export default function ProfileDropdown({
   holdDuration = 1200,
   showStatus = true,
   showTheme = true,
+  compactTrigger = false,
   className,
   ...props
 }: ProfileDropdownProps) {
@@ -900,10 +902,13 @@ export default function ProfileDropdown({
       {...props}
     >
       <button
+        aria-label={compactTrigger ? `${account.name} — открыть меню профиля` : undefined}
         aria-controls={sharedInPanel ? menuId : undefined}
         aria-expanded={sharedInPanel}
         aria-haspopup="menu"
-        className="flex w-60 items-center gap-2.5 rounded-2xl border border-zinc-200 bg-white p-2 pr-3 text-left outline-none transition-colors duration-150 hover:border-zinc-300 hover:bg-zinc-50 focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:border-zinc-800 dark:bg-zinc-900 dark:focus-visible:ring-zinc-500 dark:focus-visible:ring-offset-zinc-950 dark:hover:border-zinc-700 dark:hover:bg-zinc-800/60"
+        className={compactTrigger
+          ? "grid size-11 place-items-center rounded-full border border-[#ded9e9] bg-white p-0 text-left outline-none transition-colors duration-150 hover:border-[#8069df] focus-visible:ring-2 focus-visible:ring-[#8069df] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+          : "flex w-60 items-center gap-2.5 rounded-2xl border border-zinc-200 bg-white p-2 pr-3 text-left outline-none transition-colors duration-150 hover:border-zinc-300 hover:bg-zinc-50 focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:border-zinc-800 dark:bg-zinc-900 dark:focus-visible:ring-zinc-500 dark:focus-visible:ring-offset-zinc-950 dark:hover:border-zinc-700 dark:hover:bg-zinc-800/60"}
         onClick={(event) => {
           const via = viaOf(event);
           openMenu(via, via === "keyboard" ? "first" : "menu");
@@ -917,41 +922,47 @@ export default function ProfileDropdown({
         ref={triggerRef}
         type="button"
       >
-        <span className="min-w-0 flex-1">
-          <Identity
-            account={account}
-            shared={!sharedInPanel}
-            stacked={false}
-            status={status}
-            tone={tone}
-            transition={sharedTransition}
-            uid={uid}
-          />
-        </span>
-        <ChevronsUpDown
-          aria-hidden="true"
-          className={cn(
-            "size-4 shrink-0 text-zinc-400 transition-opacity duration-150 dark:text-zinc-500",
-            phase !== "closed" && "opacity-0"
-          )}
-        />
+        {compactTrigger ? (
+          <Avatar account={account} className="size-10 bg-[#dfff66] text-[#30225e]" tone={tone} />
+        ) : (
+          <>
+            <span className="min-w-0 flex-1">
+              <Identity
+                account={account}
+                shared={!sharedInPanel}
+                stacked={false}
+                status={showStatus ? status : undefined}
+                tone={tone}
+                transition={sharedTransition}
+                uid={uid}
+              />
+            </span>
+            <ChevronsUpDown
+              aria-hidden="true"
+              className={cn(
+                "size-4 shrink-0 text-zinc-400 transition-opacity duration-150 dark:text-zinc-500",
+                phase !== "closed" && "opacity-0"
+              )}
+            />
+          </>
+        )}
       </button>
 
       {phase === "closed" ? null : (
         <div
           className="pointer-events-none absolute top-0 right-0 z-10"
-          style={{ width: PANEL_W }}
+          style={{ width: PANEL_W, ...(compactTrigger ? { right: -40, maxWidth: 'calc(100vw - 24px)' } : {}) }}
         >
           <div
             aria-hidden="true"
             className="absolute inset-0 [filter:drop-shadow(0_12px_24px_rgb(0_0_0/0.08))_drop-shadow(0_2px_4px_rgb(0_0_0/0.04))] dark:[filter:drop-shadow(0_12px_28px_rgb(0_0_0/0.5))]"
           >
             <motion.div
-              className="absolute inset-0 bg-zinc-200 dark:bg-zinc-800"
+              className="absolute inset-0 bg-[#e3dfec]"
               style={{ clipPath: outerClip }}
             />
             <motion.div
-              className="absolute inset-0 bg-white dark:bg-zinc-900"
+              className="absolute inset-0 bg-[#fbfaff]"
               style={{ clipPath: innerClip }}
             />
           </div>
@@ -979,7 +990,7 @@ export default function ProfileDropdown({
                     account={account}
                     shared={sharedInPanel}
                     stacked
-                    status={status}
+                    status={showStatus ? status : undefined}
                     tone={tone}
                     transition={sharedTransition}
                     uid={uid}

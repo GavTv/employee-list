@@ -1,0 +1,26 @@
+.toolbar { display: flex; min-height: 64px; align-items: center; gap: 9px; padding: 12px 25px; border-top: 1px solid #eeeaf4; border-bottom: 1px solid #eeeaf4; background: #fbfaff; }
+.search-box { display: flex; width: 100%; max-width: 390px; height: 46px; flex: 1; align-items: center; gap: 9px; padding: 0 12px; border: 1px solid #e2deeb; border-radius: 9px; background: #fff; transition: border-color .16s, box-shadow .16s; }
+.search-box:focus-within { border-color: #8069df; box-shadow: 0 0 0 3px #5e43d612; }
+.search-icon { color: var(--accent); font-family: var(--serif); font-size: 22px; line-height: 1; }
+.search-box input { min-width: 0; flex: 1; outline: 0; border: 0; color: var(--ink); background: transparent; font-size: 16px; }
+.search-box input::placeholder { color: #a09aad; }
+.search-box kbd { padding: 3px 5px; border: 1px solid #e8e4ef; border-radius: 4px; color: #8f899c; background: #f7f5fb; font-family: var(--mono); font-size: 9px; }
+.filter-box { position: relative; display: flex; min-width: 157px; height: 46px; align-items: center; gap: 8px; padding: 0 32px 0 12px; border: 1px solid #e2deeb; border-radius: 9px; background: #fff; }
+.filter-box:focus-within { border-color: #8069df; box-shadow: 0 0 0 3px #5e43d612; }
+.filter-label { color: #817a92; font-family: var(--mono); font-size: 9px; letter-spacing: .02em; }
+.filter-label, .filter-value, .select-chevron { position: relative; z-index: 1; pointer-events: none; }
+.filter-value { overflow: hidden; color: #443a65; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
+.filter-box select { position: absolute; z-index: 2; inset: 0; width: 100%; max-width: none; height: 100%; cursor: pointer; opacity: 0; }
+.select-chevron { position: absolute; top: 50%; right: 7px; display: grid; transform: translateY(-50%); color: #827a96; place-items: center; }
+
+@media (max-width: 760px) {
+  .toolbar { display: grid; min-height: 0; grid-template-columns: 1fr 1fr; gap: 7px; padding: 11px 13px; }
+  .search-box { max-width: none; grid-column: 1 / -1; }
+  .filter-box { width: 100%; min-width: 0; grid-column: 1 / -1; }
+}
+@media (max-width: 420px) {
+  .filter-box { gap: 5px; padding-left: 9px; }
+  .filter-label { font-size: 9px; }
+  .filter-value { font-size: 12px; }
+  .search-box kbd { display: none; }
+}

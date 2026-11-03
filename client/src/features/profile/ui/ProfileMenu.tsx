@@ -3,9 +3,11 @@ import { Camera, ImagePlus, Sparkles, Trash2 } from 'lucide-react';
 import ProfileDropdown, { type Account, type ProfileMenuItem } from '@/components/kokonutui/profile-dropdown';
 import AvatarPicker from '@/components/kokonutui/avatar-picker';
 import FileUpload, { type UploadHelpers } from '@/components/kokonutui/file-upload';
-import { api } from '@/shared/api/client';
+import { userApi } from '@/entities/user/api/userApi';
+import type { UserProfile } from '@/entities/user/model/types';
+import { cn } from '@/lib/utils';
+import './ProfileMenu.css';
 
-type UserProfile = { id: number; email: string; profileImage: string | null };
 type MediaMode = 'upload' | 'generated';
 
 function readImage(file: File, signal: AbortSignal): Promise<string> {
@@ -32,13 +34,11 @@ export function ProfileMenu({ onLogout }: { onLogout: () => void }) {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    api<{ user: UserProfile }>('/auth/me').then(({ user }) => setProfile(user)).catch(() => undefined);
+    userApi.current().then(({ user }) => setProfile(user)).catch(() => undefined);
   }, []);
 
   async function saveProfileImage(profileImage: string | null) {
-    const result = await api<{ profileImage: string | null }>('/auth/profile', {
-      method: 'PATCH', body: JSON.stringify({ profileImage }),
-    });
+    const result = await userApi.updateProfileImage(profileImage);
     setProfile((current) => current ? { ...current, profileImage: result.profileImage } : current);
   }
 
@@ -50,9 +50,7 @@ export function ProfileMenu({ onLogout }: { onLogout: () => void }) {
     helpers.onProgress(10);
     const image = await readImage(file, helpers.signal);
     helpers.onProgress(55);
-    const result = await api<{ profileImage: string | null }>('/auth/profile', {
-      method: 'PATCH', body: JSON.stringify({ profileImage: image }), signal: helpers.signal,
-    });
+    const result = await userApi.updateProfileImage(image, helpers.signal);
     setProfile((current) => current ? { ...current, profileImage: result.profileImage } : current);
     helpers.onProgress(100);
   }
@@ -90,6 +88,8 @@ export function ProfileMenu({ onLogout }: { onLogout: () => void }) {
       defaultAccountId={account.id}
       defaultStatus="online"
       defaultTheme="light"
+      compactTrigger
+      className="profile-menu-root"
       holdDuration={500}
       items={items}
       onSignOut={onLogout}
@@ -102,8 +102,8 @@ export function ProfileMenu({ onLogout }: { onLogout: () => void }) {
         <span className="eyebrow">ВАШ ПРОФИЛЬ</span>
         <h2 id="avatar-upload-title">{mediaMode === 'generated' ? 'Создать аватар' : 'Загрузить фото'}</h2>
         <div className="profile-media-tabs" role="tablist" aria-label="Способ выбора изображения">
-          <button type="button" role="tab" aria-selected={mediaMode === 'generated'} className={mediaMode === 'generated' ? 'active' : ''} onClick={() => { setError(''); setMediaMode('generated'); }}><Sparkles size={15}/> Создать аватар</button>
-          <button type="button" role="tab" aria-selected={mediaMode === 'upload'} className={mediaMode === 'upload' ? 'active' : ''} onClick={() => { setError(''); setMediaMode('upload'); }}><Camera size={15}/> Загрузить фото</button>
+        <button type="button" role="tab" aria-selected={mediaMode === 'generated'} className={cn(mediaMode === 'generated' && 'active')} onClick={() => { setError(''); setMediaMode('generated'); }}><Sparkles size={15}/> Создать аватар</button>
+        <button type="button" role="tab" aria-selected={mediaMode === 'upload'} className={cn(mediaMode === 'upload' && 'active')} onClick={() => { setError(''); setMediaMode('upload'); }}><Camera size={15}/> Загрузить фото</button>
         </div>
         {mediaMode === 'generated' ? <AvatarPicker
           defaultValue={{ displayName: profile?.email.split('@')[0] || 'Сотрудник', variant: 0 }}

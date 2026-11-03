@@ -1,0 +1,28 @@
+.employee-card { position: relative; display: flex; min-width: 0; min-height: 205px; flex-direction: column; overflow: hidden; padding: 16px; border: 1px solid #e4dfeb; border-radius: 12px; background: #faf9fc; animation: rise .35s both; transition: border-color .18s, transform .18s, box-shadow .18s; }
+.employee-card::after { position: absolute; right: -24px; bottom: -38px; width: 90px; height: 90px; border: 1px solid #745bd01b; border-radius: 50%; content: ''; box-shadow: 0 0 0 13px #745bd00a, 0 0 0 26px #745bd006; transition: transform .25s; }
+.employee-card:hover { transform: translateY(-3px); border-color: #bcb0e5; box-shadow: 0 8px 22px #34265b10; }
+.employee-card:hover::after { transform: scale(1.1); }
+.card-top { display: flex; align-items: flex-start; justify-content: space-between; }
+.row-index { padding-top: 5px; color: #817a92; font-family: var(--mono); font-size: 9px; letter-spacing: .04em; }
+.avatar { display: grid; width: 40px; height: 40px; flex: none; place-items: center; border-radius: 13px 13px 13px 3px; color: #fff; background: #6a50d5; font-size: 11px; font-weight: 700; letter-spacing: -.03em; }
+.employee-card:nth-child(4n + 2) .avatar { color: #433513; background: #dfff66; }
+.employee-card:nth-child(4n + 3) .avatar { color: #6a3028; background: #ffc2a4; }
+.employee-card:nth-child(4n) .avatar { color: #fff; background: #39a694; }
+.employee-card h3 { position: relative; z-index: 1; overflow: hidden; margin: 17px 0 4px; color: #29223d; font-size: 20px; font-weight: 600; letter-spacing: -.045em; text-overflow: ellipsis; white-space: nowrap; }
+.employee-position { overflow: hidden; color: #6d667b; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
+.card-bottom { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: auto; padding-top: 13px; border-top: 1px solid #e9e5ef; }
+.department-label { color: #817a92; font-family: var(--mono); font-size: 9px; letter-spacing: .04em; }
+.department-pill { display: inline-flex; max-width: 72%; align-items: center; gap: 6px; overflow: hidden; padding: 7px 9px; border-radius: 7px; color: #4d3aa1; background: #eeeafd; font-size: 11px; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.department-pill::before { width: 5px; height: 5px; flex: none; border-radius: 50%; background: #ee7655; content: ''; }
+@media (max-width: 620px) {
+  .employee-card { min-height: 145px; display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: 40px auto auto auto; padding: 13px 14px; border-radius: 11px; }
+  .card-top { grid-column: 1 / -1; grid-row: 1; align-items: flex-start; }
+  .row-index { grid-row: auto; }
+  .avatar { width: 37px; height: 37px; }
+  .employee-card h3 { grid-column: 1 / -1; grid-row: 2; margin: 6px 0 3px; font-size: 18px; }
+  .employee-position { grid-column: 1 / -1; grid-row: 3; font-size: 13px; }
+  .card-bottom { grid-column: 1 / -1; grid-row: 4; justify-content: flex-start; gap: 7px; margin-top: 9px; padding-top: 8px; border-top: 1px solid #e9e5ef; }
+  .row-index { position: static; }
+  .department-label { display: none; }
+  .department-pill { padding: 5px 8px; font-size: 10px; }
+}

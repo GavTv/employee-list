@@ -1,0 +1,36 @@
+.topbar { position: relative; z-index: 2; display: flex; height: 72px; align-items: center; justify-content: space-between; padding: 0 clamp(20px, 6vw, 92px); border-bottom: 1px solid #dfdbe9; background: #f7f5fb; }
+.brand { display: inline-flex; align-items: center; gap: 10px; color: #241d38; font-size: 21px; font-weight: 800; letter-spacing: -.07em; }
+.brand > span:last-child { display: grid; }
+.brand i { color: #f27954; font-style: normal; }
+.brand small { margin-top: 4px; color: #777184; font-family: var(--mono); font-size: 8px; font-weight: 400; letter-spacing: .05em; }
+.brand-mark { display: grid; width: 30px; height: 30px; place-items: center; border-radius: 9px 9px 9px 2px; color: #fff; background: #5e43d6; font-size: 19px; }
+.topbar-nav { display: flex; align-items: center; gap: 12px; margin-left: 35px; margin-right: auto; }
+.topbar-nav a { display: flex; min-height: 44px; align-items: center; gap: 7px; color: #4b4265; font-size: 13px; font-weight: 600; }
+.topbar-nav a svg { color: #6b52cf; }
+.topbar-nav > span { padding: 4px 6px; border-radius: 5px; color: #716a80; background: #ebe8f2; font-family: var(--mono); font-size: 9px; }
+.topbar-right { display: flex; align-items: center; gap: 13px; }
+.workspace-badge { display: flex; align-items: center; gap: 7px; color: #716b7d; font-family: var(--mono); font-size: 9px; letter-spacing: .04em; }
+.workspace-badge i { width: 6px; height: 6px; border-radius: 50%; background: #91bb43; box-shadow: 0 0 0 3px #91bb4322; }
+.topbar-divider { width: 1px; height: 20px; background: #ded9e8; }
+.logout-button { padding: 7px 0 7px 2px; border: 0; color: #777184; background: transparent; font-size: 9px; }
+.logout-button:hover { color: #ee6f50; }
+@media (max-width: 760px) {
+  .topbar { height: 61px; padding: 0 14px; }
+  .brand { gap: 7px; font-size: 18px; }
+  .brand-mark { width: 27px; height: 27px; font-size: 17px; }
+  .topbar-nav { gap: 6px; margin-left: 13px; }
+  .brand small { font-size: 8px; }
+  .topbar-nav { margin-left: 7px; }
+  .topbar-nav a { gap: 4px; font-size: 12px; }
+  .topbar-nav a svg { width: 13px; }
+  .workspace-badge, .topbar-divider { display: none; }
+  .topbar-right { gap: 7px; }
+  .logout-button { min-height: 40px; font-size: 11px; }
+}
+@media (max-width: 370px) {
+  .brand small { display: none; }
+  .topbar-nav > span { display: none; }
+  .topbar-nav { margin-left: 4px; }
+  .topbar-nav a { font-size: 11px; }
+  .topbar-right { gap: 4px; }
+}

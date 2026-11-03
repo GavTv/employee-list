@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  css: { modules: { localsConvention: 'camelCaseOnly' } },
   resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
   server: { port: 5173, proxy: { '/api': 'http://localhost:4000' } },
 });
