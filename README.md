@@ -65,7 +65,7 @@ npm run dev
    - `JWT_SECRET` — случайная строка длиной не менее 32 символов;
    - `CLIENT_ORIGIN` — `https://workers-names.ru` (при необходимости перечислите несколько origin через запятую).
 3. Разверните проект и скопируйте его публичный адрес, например `https://имя-проекта.vercel.app`.
-4. В GitHub-репозитории откройте **Settings → Secrets and variables → Actions → Variables** и создайте переменную `VITE_API_BASE_URL` со значением адреса Vercel без завершающего `/`.
+4. В GitHub-репозитории откройте **Settings → Secrets and variables → Actions → Variables** и создайте переменную `VITE_API_BASE_URL` со значением адреса API Vercel без завершающего `/`. Для текущего Production API это `https://employee-list-api-gavtv.vercel.app`.
 5. Повторно запустите workflow **Deploy GitHub Pages**. После публикации клиент будет отправлять API-запросы в Vercel.
 
 Для локальной разработки `VITE_API_BASE_URL` оставьте пустым: Vite проксирует `/api` на локальный Express. В production Vercel использует Neon; SQLite файл из локального компьютера в облако не копируется.
