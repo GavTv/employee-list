@@ -35,7 +35,16 @@ authRouter.post('/login', async (req, res) => {
 });
 
 authRouter.get('/me', authenticate, (req: AuthenticatedRequest, res) => {
-  const user = db.prepare('SELECT id, email FROM users WHERE id = ?').get(req.userId);
+  const user = db.prepare('SELECT id, email, profile_image AS profileImage FROM users WHERE id = ?').get(req.userId);
   if (!user) return res.status(401).json({ message: 'Пользователь не найден' });
   return res.json({ user });
+});
+
+authRouter.patch('/profile', authenticate, (req: AuthenticatedRequest, res) => {
+  const profileImage: unknown = req.body.profileImage;
+  if (profileImage !== null && (typeof profileImage !== 'string' || profileImage.length > 1_500_000 || !/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/]+=*$/.test(profileImage))) {
+    return res.status(400).json({ message: 'Загрузите изображение PNG, JPEG или WebP размером до 1 МБ' });
+  }
+  db.prepare('UPDATE users SET profile_image = ? WHERE id = ?').run(profileImage, req.userId);
+  return res.json({ profileImage });
 });

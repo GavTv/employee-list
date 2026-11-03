@@ -14,6 +14,7 @@ db.exec(`
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     email TEXT NOT NULL UNIQUE COLLATE NOCASE,
     password_hash TEXT NOT NULL,
+    profile_image TEXT,
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
   );
   CREATE TABLE IF NOT EXISTS employees (
@@ -24,6 +25,11 @@ db.exec(`
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
   );
 `);
+
+const userColumns = db.prepare('PRAGMA table_info(users)').all() as { name: string }[];
+if (!userColumns.some((column) => column.name === 'profile_image')) {
+  db.exec('ALTER TABLE users ADD COLUMN profile_image TEXT');
+}
 
 const seed = db.prepare('INSERT INTO employees (full_name, position, department) VALUES (?, ?, ?)');
 const insertDemoEmployees = db.transaction(() => {

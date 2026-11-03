@@ -1,3 +1,5 @@
+import { ProfileMenu } from '../../features/profile/ui/ProfileMenu';
+
 export function Header({ onLogout }: { onLogout: () => void }) {
-  return <header className="topbar"><a href="#" className="brand"><span className="brand-mark">к</span> команда<span className="brand-dot">.</span></a><div className="topbar-right"><span className="workspace-badge"><i /> Рабочее пространство</span><div className="topbar-divider"/><button className="profile-button" aria-label="Профиль" title="Вы вошли в систему"><span className="profile-avatar">Я</span><span className="profile-caret">⌄</span></button><button className="logout-button" onClick={onLogout}>Выйти</button></div></header>;
+  return <header className="topbar"><a href="/" className="brand"><span className="brand-mark">к</span> команда<span className="brand-dot">.</span></a><div className="topbar-right"><span className="workspace-badge"><i /> Рабочее пространство</span><div className="topbar-divider"/><ProfileMenu onLogout={onLogout} /><button className="logout-button" type="button" onClick={onLogout}>Выйти</button></div></header>;
 }
