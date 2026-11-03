@@ -1,8 +1,10 @@
 import 'dotenv/config';
 
-const jwtSecret = process.env.JWT_SECRET;
+const isLocalDevelopment = process.env.NODE_ENV !== 'production' && process.env.VERCEL !== '1';
+const localJwtSecret = isLocalDevelopment ? 'employee-list-local-development-secret' : undefined;
+const jwtSecret = process.env.JWT_SECRET || localJwtSecret;
 if (!jwtSecret || jwtSecret.length < 32) {
-  throw new Error('JWT_SECRET must be set in server/.env and contain at least 32 characters');
+  throw new Error('Set JWT_SECRET to a value of at least 32 characters before starting the production API');
 }
 
 export const env = {

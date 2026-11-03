@@ -2,7 +2,7 @@
 
 ## Project overview
 
-Employee directory built with React and TypeScript, Express and TypeScript, SQLite for local development, and Neon PostgreSQL for the hosted API. Start the client and API together from the repository root with `npm run dev`. Create `server/.env` from `server/.env.example` first.
+Employee directory built with React and TypeScript, Express and TypeScript, SQLite for local development, and Neon PostgreSQL for the hosted API. Use Node.js 22 or Node.js 20.19 and later. Start the client and API together from the repository root with `npm run dev`; local development uses SQLite and a local-only JWT secret, so no `.env` file is required. For deployment, configure environment variables outside Git.
 
 ## Architecture
 
