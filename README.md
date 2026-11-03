@@ -15,6 +15,32 @@
 - Стили страниц и компонентов оформлены CSS Modules рядом с TSX. Глобальный `app/styles.css` оставлен для сброса, токенов темы и общих элементов.
 - `lib/utils.ts` экспортирует `cn` на основе `clsx` и `tailwind-merge` для условных классов.
 
+## Структура сервера
+
+Серверные файлы сгруппированы по функциям. Внутри каждой папки рядом лежат маршруты, контроллер, сервис и репозиторий:
+
+```text
+server/src/
+├── features/
+│   ├── auth/
+│   │   ├── auth.routes.ts       # URL и middleware
+│   │   ├── auth.controller.ts  # HTTP-запросы и ответы
+│   │   ├── auth.service.ts     # правила регистрации и профиля
+│   │   └── auth.repository.ts  # SQL-запросы пользователей
+│   └── employees/
+│       ├── employees.routes.ts
+│       ├── employees.controller.ts
+│       ├── employees.service.ts
+│       └── employees.repository.ts
+├── config/                     # переменные окружения
+├── db/                         # подключение и схема SQLite
+├── middleware/                 # JWT-аутентификация
+├── shared/                     # общие типы HTTP
+└── index.ts                    # запуск Express
+```
+
+Контроллеры отвечают за HTTP, сервисы — за проверки и правила, репозитории — за SQL. Так запросы к базе не смешиваются с обработкой маршрутов.
+
 Интерфейс профиля использует компоненты [Kokonut UI](https://kokonutui.com/): Account Menu, Avatar Picker и File Upload. Исходники компонентов находятся в `client/src/components/kokonutui/`.
 
 ## Запуск
