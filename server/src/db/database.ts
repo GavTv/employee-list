@@ -1,0 +1,40 @@
+import path from 'node:path';
+import fs from 'node:fs';
+import Database from 'better-sqlite3';
+
+const dataDirectory = path.resolve(__dirname, '../../data');
+fs.mkdirSync(dataDirectory, { recursive: true });
+
+export const db = new Database(path.join(dataDirectory, 'employees.sqlite'));
+db.pragma('journal_mode = WAL');
+db.pragma('foreign_keys = ON');
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    email TEXT NOT NULL UNIQUE COLLATE NOCASE,
+    password_hash TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE TABLE IF NOT EXISTS employees (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    full_name TEXT NOT NULL,
+    position TEXT NOT NULL,
+    department TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+`);
+
+const seed = db.prepare('INSERT INTO employees (full_name, position, department) VALUES (?, ?, ?)');
+const insertDemoEmployees = db.transaction(() => {
+  const count = (db.prepare('SELECT COUNT(*) AS count FROM employees').get() as { count: number }).count;
+  if (count > 0) return;
+  [
+    ['Анна Смирнова', 'Дизайнер продукта', 'Дизайн'],
+    ['Михаил Иванов', 'Frontend-разработчик', 'Разработка'],
+    ['Екатерина Петрова', 'Менеджер по продукту', 'Продукт'],
+    ['Александр Кузнецов', 'Аналитик данных', 'Аналитика'],
+    ['Мария Соколова', 'Специалист по маркетингу', 'Маркетинг'],
+  ].forEach((employee) => seed.run(...employee));
+});
+insertDemoEmployees();
