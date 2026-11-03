@@ -1,4 +1,4 @@
-import { db } from '../../db/database';
+import { findMany, findOne, insertId } from '../../db/database';
 
 type EmployeeRow = {
   id: number;
@@ -28,46 +28,43 @@ function toEmployee(row: EmployeeRow): EmployeeRecord {
   };
 }
 
-export function findEmployees(
+export async function findEmployees(
   query: string,
   department: string,
-): EmployeeRecord[] {
-  const rows = db
-    .prepare(
-      `
-        SELECT id, full_name, position, department, created_at
-        FROM employees
-        WHERE (? = '' OR full_name LIKE ? COLLATE NOCASE)
-          AND (? = '' OR department = ? COLLATE NOCASE)
-        ORDER BY full_name COLLATE NOCASE ASC
-      `,
-    )
-    .all(query, `%${query}%`, department, department) as EmployeeRow[];
+): Promise<EmployeeRecord[]> {
+  const rows = await findMany<EmployeeRow>(
+    `
+      SELECT id, full_name, position, department, created_at
+      FROM employees
+      WHERE (? = '' OR LOWER(full_name) LIKE LOWER(?))
+        AND (? = '' OR LOWER(department) = LOWER(?))
+      ORDER BY LOWER(full_name) ASC
+    `,
+    [query, `%${query}%`, department, department],
+  );
 
   return rows.map(toEmployee);
 }
 
-export function findDepartments(): string[] {
-  const rows = db
-    .prepare(
-      'SELECT DISTINCT department FROM employees ORDER BY department COLLATE NOCASE',
-    )
-    .all() as { department: string }[];
+export async function findDepartments(): Promise<string[]> {
+  const rows = await findMany<{ department: string }>(
+    'SELECT DISTINCT department FROM employees ORDER BY LOWER(department) ASC',
+  );
 
   return rows.map((row) => row.department);
 }
 
-export function createEmployee(employee: NewEmployee): EmployeeRecord {
-  const result = db
-    .prepare(
-      'INSERT INTO employees (full_name, position, department) VALUES (?, ?, ?)',
-    )
-    .run(employee.fullName, employee.position, employee.department);
-  const row = db
-    .prepare(
-      'SELECT id, full_name, position, department, created_at FROM employees WHERE id = ?',
-    )
-    .get(result.lastInsertRowid) as EmployeeRow;
+export async function createEmployee(employee: NewEmployee): Promise<EmployeeRecord> {
+  const id = await insertId(
+    `INSERT INTO employees (full_name, position, department)
+     VALUES (?, ?, ?) RETURNING id`,
+    [employee.fullName, employee.position, employee.department],
+  );
+  const row = await findOne<EmployeeRow>(
+    'SELECT id, full_name, position, department, created_at FROM employees WHERE id = ?',
+    [id],
+  );
 
+  if (!row) throw new Error('Не удалось сохранить сотрудника');
   return toEmployee(row);
 }

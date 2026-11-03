@@ -2,13 +2,13 @@
 
 ## Project overview
 
-Employee directory built with React and TypeScript, Express and TypeScript, and SQLite. Start the client and API together from the repository root with `npm run dev`. Create `server/.env` from `server/.env.example` first.
+Employee directory built with React and TypeScript, Express and TypeScript, SQLite for local development, and Neon PostgreSQL for the hosted API. Start the client and API together from the repository root with `npm run dev`. Create `server/.env` from `server/.env.example` first.
 
 ## Architecture
 
 - Keep the frontend organized by Feature-Sliced Design layers: `app`, `pages`, `widgets`, `features`, `entities`, and `shared`.
 - Keep route handlers and domain code inside `server/src/features`; put cross-cutting middleware, configuration, database setup, and shared HTTP types in their existing folders.
-- The Express API is the only application layer that reads or writes SQLite. Frontend features call it through `client/src/shared/api/client.ts`.
+- The Express API is the only application layer that reads or writes the database. Local development uses SQLite; production uses Neon PostgreSQL when `DATABASE_URL` is set. Frontend features call the API through `client/src/shared/api/client.ts`.
 - Protect employee and profile endpoints with the existing JWT middleware. Never return password hashes or commit `.env` files.
 - Keep the interface in Russian. Use ordinary CSS for the app's existing layout and Tailwind CSS classes inside Kokonut UI components; avoid rewriting the whole app's styling system.
 - Keep the Kokonut UI registry components in `client/src/components/kokonutui/` and reuse them instead of rebuilding the account menu, avatar picker, or file upload flow.

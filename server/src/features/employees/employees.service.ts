@@ -7,7 +7,7 @@ type NewEmployee = {
 };
 
 type AddEmployeeResult =
-  | { ok: true; value: ReturnType<typeof employeesRepository.createEmployee> }
+  | { ok: true; value: Awaited<ReturnType<typeof employeesRepository.createEmployee>> }
   | { ok: false; status: 400; message: string };
 
 function readText(value: unknown): string {
@@ -25,7 +25,7 @@ export function listDepartments() {
   return employeesRepository.findDepartments();
 }
 
-export function addEmployee(body: unknown): AddEmployeeResult {
+export async function addEmployee(body: unknown): Promise<AddEmployeeResult> {
   const payload =
     typeof body === 'object' && body !== null
       ? (body as Record<string, unknown>)
@@ -57,5 +57,5 @@ export function addEmployee(body: unknown): AddEmployeeResult {
     };
   }
 
-  return { ok: true, value: employeesRepository.createEmployee(employee) };
+  return { ok: true, value: await employeesRepository.createEmployee(employee) };
 }

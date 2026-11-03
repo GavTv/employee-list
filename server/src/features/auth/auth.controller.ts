@@ -22,8 +22,8 @@ export async function login(req: AuthenticatedRequest, res: Response) {
   return res.json({ token: result.value.token });
 }
 
-export function getCurrentUser(req: AuthenticatedRequest, res: Response) {
-  const user = authService.getCurrentUser(req.userId!);
+export async function getCurrentUser(req: AuthenticatedRequest, res: Response) {
+  const user = await authService.getCurrentUser(req.userId!);
 
   if (!user) {
     return res.status(401).json({ message: 'Пользователь не найден' });
@@ -32,9 +32,9 @@ export function getCurrentUser(req: AuthenticatedRequest, res: Response) {
   return res.json({ user });
 }
 
-export function updateProfile(req: AuthenticatedRequest, res: Response) {
+export async function updateProfile(req: AuthenticatedRequest, res: Response) {
   const profileImage: unknown = req.body?.profileImage;
-  const result = authService.updateProfileImage(req.userId!, profileImage);
+  const result = await authService.updateProfileImage(req.userId!, profileImage);
 
   if (!result.ok) {
     return res.status(result.status).json({ message: result.message });

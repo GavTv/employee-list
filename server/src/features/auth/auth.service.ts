@@ -39,12 +39,12 @@ export async function register(
     return error(400, 'Пароль должен содержать от 8 до 72 символов');
   }
 
-  if (authRepository.findUserIdByEmail(email)) {
+  if (await authRepository.findUserIdByEmail(email)) {
     return error(409, 'Аккаунт с таким email уже существует');
   }
 
   const passwordHash = await bcrypt.hash(password, 12);
-  const userId = authRepository.createUser(email, passwordHash);
+  const userId = await authRepository.createUser(email, passwordHash);
 
   return { ok: true, value: { token: issueToken(userId) } };
 }
@@ -55,7 +55,7 @@ export async function login(
 ): Promise<ServiceResult<{ token: string }>> {
   const email = normalizeEmail(emailValue) ?? '';
   const password = typeof passwordValue === 'string' ? passwordValue : '';
-  const user = authRepository.findUserForLogin(email);
+  const user = await authRepository.findUserForLogin(email);
 
   if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
     return error(401, 'Неверный email или пароль');
@@ -68,10 +68,10 @@ export function getCurrentUser(userId: number) {
   return authRepository.findProfileById(userId);
 }
 
-export function updateProfileImage(
+export async function updateProfileImage(
   userId: number,
   profileImage: unknown,
-): ServiceResult<{ profileImage: string | null }> {
+): Promise<ServiceResult<{ profileImage: string | null }>> {
   const generatedAvatar =
     typeof profileImage === 'string' &&
     profileImage.startsWith('kokonut:') &&
@@ -89,7 +89,7 @@ export function updateProfileImage(
   }
 
   const image = profileImage as string | null;
-  authRepository.updateProfileImage(userId, image);
+  await authRepository.updateProfileImage(userId, image);
 
   return { ok: true, value: { profileImage: image } };
 }

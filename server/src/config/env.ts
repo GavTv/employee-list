@@ -8,5 +8,9 @@ if (!jwtSecret || jwtSecret.length < 32) {
 export const env = {
   port: Number(process.env.PORT) || 4000,
   jwtSecret,
-  clientOrigin: process.env.CLIENT_ORIGIN || 'http://localhost:5173',
+  clientOrigins: (process.env.CLIENT_ORIGIN || 'http://localhost:5173')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean),
+  databaseUrl: process.env.DATABASE_URL,
 };

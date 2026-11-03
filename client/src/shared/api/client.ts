@@ -1,5 +1,7 @@
 import { getToken } from './token';
 
+const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
+
 export class ApiError extends Error {
   constructor(message: string, public readonly status: number) { super(message); this.name = 'ApiError'; }
 }
@@ -9,7 +11,7 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
   const headers = new Headers(init.headers);
   if (init.body) headers.set('Content-Type', 'application/json');
   if (token) headers.set('Authorization', `Bearer ${token}`);
-  const response = await fetch(`/api${path}`, { ...init, headers });
+  const response = await fetch(`${apiBaseUrl}/api${path}`, { ...init, headers });
   const result = await response.json().catch(() => ({}));
   if (!response.ok) throw new ApiError(result.message || 'Произошла ошибка', response.status);
   return result as T;

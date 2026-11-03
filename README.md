@@ -1,12 +1,12 @@
 # Список сотрудников
 
-Небольшое full-stack приложение: регистрация и вход, защищённый список сотрудников, поиск по ФИО и фильтр по отделу. Данные хранятся в SQLite и остаются после перезапуска сервера. В профиле можно загрузить фото или создать сгенерированный аватар.
+Небольшое full-stack приложение: регистрация и вход, защищённый список сотрудников, поиск по ФИО и фильтр по отделу. Для локального запуска используется SQLite; опубликованный API подключается к Neon PostgreSQL, чтобы регистрации сохранялись в общей облачной базе. В профиле можно загрузить фото или создать сгенерированный аватар.
 
 ## Стек
 
 - Frontend: React, TypeScript, Vite, FSD, обычный CSS, Tailwind CSS v4 для компонентов Kokonut UI, Anime.js.
 - Backend: Node.js, Express, TypeScript.
-- Хранение: SQLite (`better-sqlite3`). Пароли хешируются с помощью bcrypt, API защищено JWT.
+- Хранение: SQLite (`better-sqlite3`) локально и Neon PostgreSQL при публикации. Пароли хешируются с помощью bcrypt, API защищено JWT.
 
 ## Структура клиента
 
@@ -33,7 +33,7 @@ server/src/
 │       ├── employees.service.ts
 │       └── employees.repository.ts
 ├── config/                     # переменные окружения
-├── db/                         # подключение и схема SQLite
+├── db/                         # адаптер SQLite / PostgreSQL и инициализация схемы
 ├── middleware/                 # JWT-аутентификация
 ├── shared/                     # общие типы HTTP
 └── index.ts                    # запуск Express
@@ -45,9 +45,36 @@ server/src/
 
 
 
-Для GitHub Pages используется домен `workers-names.ru` (без протокола). Файл `CNAME` в корне репозитория фиксирует домен для публикации из ветки, а `client/public/CNAME` попадёт в корень Vite-сборки `client/dist`.
+Для GitHub Pages используется домен `workers-names.ru`. Файл `CNAME` в корне репозитория фиксирует домен, а `client/public/CNAME` попадает в корень Vite-сборки.
 
-GitHub Pages обслуживает статический клиент. Для работы регистрации и списка сотрудников Express API и SQLite-сервер нужно будет разместить отдельно; база остаётся локальной для этого сервера.
+## Локальный запуск
+
+```bash
+npm install
+cp server/.env.example server/.env
+npm run dev
+```
+
+Без `DATABASE_URL` сервер автоматически создаёт `server/data/employees.sqlite` и использует SQLite. Пароли хранятся только как bcrypt-хеши.
+
+## Публикация API на Vercel и база Neon
+
+1. Создайте проект Vercel из этого GitHub-репозитория и укажите **Root Directory: `server`**. Vercel обнаружит Express API в `src/index.ts`.
+2. В Vercel → **Settings → Environment Variables** добавьте:
+   - `DATABASE_URL` — pooled connection string из Neon (секрет, не добавлять в GitHub);
+   - `JWT_SECRET` — случайная строка длиной не менее 32 символов;
+   - `CLIENT_ORIGIN` — `https://workers-names.ru` (при необходимости перечислите несколько origin через запятую).
+3. Разверните проект и скопируйте его публичный адрес, например `https://имя-проекта.vercel.app`.
+4. В GitHub-репозитории откройте **Settings → Secrets and variables → Actions → Variables** и создайте переменную `VITE_API_BASE_URL` со значением адреса Vercel без завершающего `/`.
+5. Повторно запустите workflow **Deploy GitHub Pages**. После публикации клиент будет отправлять API-запросы в Vercel.
+
+Для локальной разработки `VITE_API_BASE_URL` оставьте пустым: Vite проксирует `/api` на локальный Express. В production Vercel использует Neon; SQLite файл из локального компьютера в облако не копируется.
+
+### Просмотр записей в Beekeeper Studio
+
+В Beekeeper выберите тип подключения **Postgres** и укажите параметры из Neon → **Connect** (host, database, user, password, port и SSL). Пользователи и сотрудники будут в таблицах `users` и `employees`. В `users.password_hash` лежит только хеш, исходный пароль в таблицу не записывается.
+
+Секреты `DATABASE_URL` и `JWT_SECRET` храните только в локальном `server/.env` или в Environment Variables Vercel. Не коммитьте их в репозиторий.
 
 
 ## API
