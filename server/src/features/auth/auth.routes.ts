@@ -42,7 +42,9 @@ authRouter.get('/me', authenticate, (req: AuthenticatedRequest, res) => {
 
 authRouter.patch('/profile', authenticate, (req: AuthenticatedRequest, res) => {
   const profileImage: unknown = req.body.profileImage;
-  if (profileImage !== null && (typeof profileImage !== 'string' || profileImage.length > 1_500_000 || !/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/]+=*$/.test(profileImage))) {
+  const generatedAvatar = typeof profileImage === 'string' && profileImage.startsWith('kokonut:') && profileImage.length <= 200;
+  const uploadedImage = typeof profileImage === 'string' && profileImage.length <= 1_500_000 && /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/]+=*$/.test(profileImage);
+  if (profileImage !== null && !generatedAvatar && !uploadedImage) {
     return res.status(400).json({ message: 'Загрузите изображение PNG, JPEG или WebP размером до 1 МБ' });
   }
   db.prepare('UPDATE users SET profile_image = ? WHERE id = ?').run(profileImage, req.userId);

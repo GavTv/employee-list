@@ -1,84 +1,126 @@
-import { useEffect, useRef, useState } from 'react';
-import { animate, createScope } from 'animejs';
-import { api } from '../../../shared/api/client';
-import { getErrorMessage } from '../../../shared/api/errors';
+import { useEffect, useState } from 'react';
+import { Camera, ImagePlus, Sparkles, Trash2 } from 'lucide-react';
+import ProfileDropdown, { type Account, type ProfileMenuItem } from '@/components/kokonutui/profile-dropdown';
+import AvatarPicker from '@/components/kokonutui/avatar-picker';
+import FileUpload, { type UploadHelpers } from '@/components/kokonutui/file-upload';
+import { api } from '@/shared/api/client';
 
-type UserProfile = { email: string; profileImage: string | null };
+type UserProfile = { id: number; email: string; profileImage: string | null };
+type MediaMode = 'upload' | 'generated';
+
+function readImage(file: File, signal: AbortSignal): Promise<string> {
+  return new Promise((resolve, reject) => {
+    if (signal.aborted) return reject(new DOMException('Загрузка отменена', 'AbortError'));
+    const reader = new FileReader();
+    const cleanup = () => signal.removeEventListener('abort', abort);
+    const abort = () => { reader.abort(); reject(new DOMException('Загрузка отменена', 'AbortError')); };
+    signal.addEventListener('abort', abort, { once: true });
+    reader.onload = () => {
+      cleanup();
+      if (typeof reader.result === 'string') resolve(reader.result);
+      else reject(new Error('Не удалось прочитать изображение'));
+    };
+    reader.onerror = () => { cleanup(); reject(new Error('Не удалось прочитать изображение')); };
+    reader.onabort = () => { cleanup(); reject(new DOMException('Загрузка отменена', 'AbortError')); };
+    reader.readAsDataURL(file);
+  });
+}
 
 export function ProfileMenu({ onLogout }: { onLogout: () => void }) {
-  const [open, setOpen] = useState(false);
   const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [busy, setBusy] = useState(false);
+  const [mediaMode, setMediaMode] = useState<MediaMode | null>(null);
   const [error, setError] = useState('');
-  const rootRef = useRef<HTMLDivElement>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
-  const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     api<{ user: UserProfile }>('/auth/me').then(({ user }) => setProfile(user)).catch(() => undefined);
   }, []);
 
-  useEffect(() => {
-    if (!open) return;
-    const closeOnOutsideClick = (event: MouseEvent) => {
-      if (event.target instanceof Node && !rootRef.current?.contains(event.target)) setOpen(false);
-    };
-    const closeOnEscape = (event: KeyboardEvent) => { if (event.key === 'Escape') setOpen(false); };
-    document.addEventListener('mousedown', closeOnOutsideClick);
-    document.addEventListener('keydown', closeOnEscape);
-    return () => {
-      document.removeEventListener('mousedown', closeOnOutsideClick);
-      document.removeEventListener('keydown', closeOnEscape);
-    };
-  }, [open]);
-
-  useEffect(() => {
-    if (!open || !menuRef.current || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const scope = createScope({ root: menuRef }).add(() => {
-      animate('.profile-menu', { opacity: [0, 1], y: [-7, 0], scale: [0.98, 1], duration: 190, ease: 'out(3)' });
+  async function saveProfileImage(profileImage: string | null) {
+    const result = await api<{ profileImage: string | null }>('/auth/profile', {
+      method: 'PATCH', body: JSON.stringify({ profileImage }),
     });
-    return () => scope.revert();
-  }, [open]);
-
-  async function savePhoto(profileImage: string | null) {
-    setBusy(true); setError('');
-    try {
-      const result = await api<{ profileImage: string | null }>('/auth/profile', { method: 'PATCH', body: JSON.stringify({ profileImage }) });
-      setProfile((current) => current ? { ...current, profileImage: result.profileImage } : current);
-    } catch (cause) { setError(getErrorMessage(cause)); }
-    finally { setBusy(false); }
+    setProfile((current) => current ? { ...current, profileImage: result.profileImage } : current);
   }
 
-  function uploadPhoto(file?: File) {
-    if (!file) return;
+  async function uploadPhoto(file: File, helpers: UploadHelpers) {
     if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) {
-      setError('Выбери изображение PNG, JPEG или WebP.');
-      return;
+      throw new Error('Поддерживаются изображения PNG, JPEG и WebP.');
     }
-    if (file.size > 1024 * 1024) {
-      setError('Размер изображения должен быть не больше 1 МБ.');
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = () => { if (typeof reader.result === 'string') void savePhoto(reader.result); };
-    reader.onerror = () => setError('Не получилось прочитать файл. Попробуй ещё раз.');
-    reader.readAsDataURL(file);
+    if (file.size > 1024 * 1024) throw new Error('Размер изображения должен быть не больше 1 МБ.');
+    helpers.onProgress(10);
+    const image = await readImage(file, helpers.signal);
+    helpers.onProgress(55);
+    const result = await api<{ profileImage: string | null }>('/auth/profile', {
+      method: 'PATCH', body: JSON.stringify({ profileImage: image }), signal: helpers.signal,
+    });
+    setProfile((current) => current ? { ...current, profileImage: result.profileImage } : current);
+    helpers.onProgress(100);
   }
 
-  return <div className="profile-menu-root" ref={rootRef}>
-    <button className="profile-button" type="button" aria-label="Открыть меню профиля" aria-haspopup="menu" aria-expanded={open} onClick={() => { setOpen((value) => !value); setError(''); }}>
-      <span className="profile-avatar">{profile?.profileImage ? <img src={profile.profileImage} alt="Фото профиля" /> : 'Я'}</span>
-      <span className="profile-caret">⌄</span>
-    </button>
-    {open && <div className="profile-menu" ref={menuRef} role="menu" aria-label="Меню профиля">
-      <div className="profile-menu-user"><span className="profile-avatar profile-menu-avatar">{profile?.profileImage ? <img src={profile.profileImage} alt="" /> : 'Я'}</span><span><strong>Мой профиль</strong><small>{profile?.email || 'Загружаем…'}</small></span></div>
-      <div className="profile-menu-divider" />
-      <input ref={fileRef} className="profile-file-input" type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => { uploadPhoto(event.target.files?.[0]); event.target.value = ''; }} />
-      <button className="profile-menu-action" type="button" role="menuitem" disabled={busy} onClick={() => fileRef.current?.click()}><span aria-hidden="true">▧</span>{busy ? 'Сохраняем…' : profile?.profileImage ? 'Изменить фото профиля' : 'Добавить фото профиля'}</button>
-      {profile?.profileImage && <button className="profile-menu-action" type="button" role="menuitem" disabled={busy} onClick={() => void savePhoto(null)}><span aria-hidden="true">⌫</span>Удалить фото</button>}
-      {error && <p className="profile-menu-error" role="alert">{error}</p>}
-      <div className="profile-menu-divider" />
-      <button className="profile-menu-action profile-menu-logout" type="button" role="menuitem" onClick={onLogout}><span aria-hidden="true">↗</span>Выйти из аккаунта</button>
+  async function saveGeneratedAvatar(seed: string) {
+    try {
+      await saveProfileImage(`kokonut:${seed}`);
+      setError('');
+      setMediaMode(null);
+    } catch {
+      setError('Не удалось сохранить аватар. Попробуйте ещё раз.');
+    }
+  }
+
+  const generatedSeed = profile?.profileImage?.startsWith('kokonut:')
+    ? profile.profileImage.slice('kokonut:'.length)
+    : undefined;
+  const account: Account = {
+    id: String(profile?.id ?? 'current-user'),
+    name: 'Мой профиль',
+    email: profile?.email ?? 'Загружаем профиль…',
+    initials: 'Я',
+    avatarUrl: profile?.profileImage?.startsWith('data:image/') ? profile.profileImage : undefined,
+    avatarSeed: generatedSeed,
+  };
+  const items: ProfileMenuItem[] = [
+    { label: 'Создать аватар', icon: <Sparkles className="size-4" />, onSelect: () => { setError(''); setMediaMode('generated'); } },
+    { label: 'Загрузить фото', icon: <ImagePlus className="size-4" />, onSelect: () => { setError(''); setMediaMode('upload'); } },
+    ...(profile?.profileImage ? [{ label: 'Удалить фото или аватар', icon: <Trash2 className="size-4" />, onSelect: () => { void saveProfileImage(null); } }] : []),
+  ];
+
+  return <>
+    <ProfileDropdown
+      accounts={[account]}
+      defaultAccountId={account.id}
+      defaultStatus="online"
+      defaultTheme="light"
+      holdDuration={500}
+      items={items}
+      onSignOut={onLogout}
+      showStatus={false}
+      showTheme={false}
+    />
+    {mediaMode && <div className="modal-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) setMediaMode(null); }}>
+      <section className="modal kokonut-upload-modal" role="dialog" aria-modal="true" aria-labelledby="avatar-upload-title">
+        <button className="modal-close" type="button" onClick={() => setMediaMode(null)} aria-label="Закрыть">×</button>
+        <span className="eyebrow">ВАШ ПРОФИЛЬ</span>
+        <h2 id="avatar-upload-title">{mediaMode === 'generated' ? 'Создать аватар' : 'Загрузить фото'}</h2>
+        <div className="profile-media-tabs" role="tablist" aria-label="Способ выбора изображения">
+          <button type="button" role="tab" aria-selected={mediaMode === 'generated'} className={mediaMode === 'generated' ? 'active' : ''} onClick={() => { setError(''); setMediaMode('generated'); }}><Sparkles size={15}/> Создать аватар</button>
+          <button type="button" role="tab" aria-selected={mediaMode === 'upload'} className={mediaMode === 'upload' ? 'active' : ''} onClick={() => { setError(''); setMediaMode('upload'); }}><Camera size={15}/> Загрузить фото</button>
+        </div>
+        {mediaMode === 'generated' ? <AvatarPicker
+          defaultValue={{ displayName: profile?.email.split('@')[0] || 'Сотрудник', variant: 0 }}
+          description="Введите имя и выберите подходящий образ."
+          onComplete={({ seed }) => { void saveGeneratedAvatar(seed); }}
+          submitLabel="Сохранить аватар"
+          title="Выберите аватар"
+        /> : <FileUpload
+          acceptedFileTypes={['image/png', 'image/jpeg', 'image/webp']}
+          className="kokonut-file-upload"
+          maxFileSize={1024 * 1024}
+          maxFiles={1}
+          multiple={false}
+          onUpload={uploadPhoto}
+        />}
+        {error && <p className="form-error" role="alert">{error}</p>}
+      </section>
     </div>}
-  </div>;
+  </>;
 }

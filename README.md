@@ -1,12 +1,14 @@
 # Список сотрудников
 
-Небольшое full-stack приложение: регистрация и вход, защищённый список сотрудников, поиск по ФИО и фильтр по отделу. Данные хранятся в SQLite и остаются после перезапуска сервера. В профиле можно загрузить или удалить фото.
+Небольшое full-stack приложение: регистрация и вход, защищённый список сотрудников, поиск по ФИО и фильтр по отделу. Данные хранятся в SQLite и остаются после перезапуска сервера. В профиле можно загрузить фото или создать сгенерированный аватар.
 
 ## Стек
 
-- Frontend: React, TypeScript, Vite, Anime.js, обычный CSS, структура по FSD.
+- Frontend: React, TypeScript, Vite, FSD, обычный CSS, Tailwind CSS v4 для компонентов Kokonut UI, Anime.js.
 - Backend: Node.js, Express, TypeScript.
 - Хранение: SQLite (`better-sqlite3`). Пароли хешируются с помощью bcrypt, API защищено JWT.
+
+Интерфейс профиля использует компоненты [Kokonut UI](https://kokonutui.com/): Account Menu, Avatar Picker и File Upload. Исходники компонентов находятся в `client/src/components/kokonutui/`.
 
 ## Запуск
 
