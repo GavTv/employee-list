@@ -11,6 +11,7 @@ Employee directory built with React and TypeScript, Express and TypeScript, and 
 - The Express API is the only application layer that reads or writes SQLite. Frontend features call it through `client/src/shared/api/client.ts`.
 - Protect employee and profile endpoints with the existing JWT middleware. Never return password hashes or commit `.env` files.
 - Keep the interface in Russian and use ordinary CSS in `client/src/app/styles.css`.
+- Use Anime.js for interface motion where it improves feedback. In React, scope animations with `createScope()` and clean them up on unmount; respect `prefers-reduced-motion`.
 
 ## Suggested agent roles
 

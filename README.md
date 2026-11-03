@@ -4,7 +4,7 @@
 
 ## Стек
 
-- Frontend: React, TypeScript, Vite, обычный CSS, структура по FSD.
+- Frontend: React, TypeScript, Vite, Anime.js, обычный CSS, структура по FSD.
 - Backend: Node.js, Express, TypeScript.
 - Хранение: SQLite (`better-sqlite3`). Пароли хешируются с помощью bcrypt, API защищено JWT.
 

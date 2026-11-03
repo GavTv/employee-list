@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { animate, createScope } from 'animejs';
 import { api } from '../../../shared/api/client';
 import { getErrorMessage } from '../../../shared/api/errors';
 
@@ -10,6 +11,7 @@ export function ProfileMenu({ onLogout }: { onLogout: () => void }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const rootRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -28,6 +30,14 @@ export function ProfileMenu({ onLogout }: { onLogout: () => void }) {
       document.removeEventListener('mousedown', closeOnOutsideClick);
       document.removeEventListener('keydown', closeOnEscape);
     };
+  }, [open]);
+
+  useEffect(() => {
+    if (!open || !menuRef.current || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const scope = createScope({ root: menuRef }).add(() => {
+      animate('.profile-menu', { opacity: [0, 1], y: [-7, 0], scale: [0.98, 1], duration: 190, ease: 'out(3)' });
+    });
+    return () => scope.revert();
   }, [open]);
 
   async function savePhoto(profileImage: string | null) {
@@ -60,7 +70,7 @@ export function ProfileMenu({ onLogout }: { onLogout: () => void }) {
       <span className="profile-avatar">{profile?.profileImage ? <img src={profile.profileImage} alt="Фото профиля" /> : 'Я'}</span>
       <span className="profile-caret">⌄</span>
     </button>
-    {open && <div className="profile-menu" role="menu" aria-label="Меню профиля">
+    {open && <div className="profile-menu" ref={menuRef} role="menu" aria-label="Меню профиля">
       <div className="profile-menu-user"><span className="profile-avatar profile-menu-avatar">{profile?.profileImage ? <img src={profile.profileImage} alt="" /> : 'Я'}</span><span><strong>Мой профиль</strong><small>{profile?.email || 'Загружаем…'}</small></span></div>
       <div className="profile-menu-divider" />
       <input ref={fileRef} className="profile-file-input" type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => { uploadPhoto(event.target.files?.[0]); event.target.value = ''; }} />
