@@ -12,11 +12,12 @@ app.use(helmet());
 app.use(cors({ origin: env.clientOrigins }));
 app.use(express.json({ limit: '2mb' }));
 
+app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
+
 app.use((_req, _res, next) => {
   initializeDatabase().then(() => next()).catch(next);
 });
 
-app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
 app.use('/api/auth', authRouter);
 app.use('/api/employees', employeesRouter);
 app.use('/api/departments', departmentsRouter);

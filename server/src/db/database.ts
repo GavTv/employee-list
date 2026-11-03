@@ -69,7 +69,13 @@ export function initializeDatabase(): Promise<void> {
         return;
       }
 
-      postgres = new Pool({ connectionString: databaseUrl, max: 5 });
+      postgres = new Pool({
+        connectionString: databaseUrl,
+        max: 5,
+        connectionTimeoutMillis: 8_000,
+        statement_timeout: 8_000,
+        query_timeout: 10_000,
+      });
       await postgres.query(`
         CREATE TABLE IF NOT EXISTS users (
           id SERIAL PRIMARY KEY,
@@ -97,6 +103,12 @@ export function initializeDatabase(): Promise<void> {
         demoEmployees.flat(),
       );
     })();
+    initialization = initialization.catch((error: unknown) => {
+      postgres?.end().catch(() => undefined);
+      postgres = undefined;
+      initialization = undefined;
+      throw error;
+    });
   }
   return initialization;
 }
