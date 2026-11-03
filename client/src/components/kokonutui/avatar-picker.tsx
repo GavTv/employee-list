@@ -1,15 +1,5 @@
-// biome-ignore-all lint/suspicious/noBitwiseOperators: the seed hash and PRNG are bitwise by design.
-"use client";
 
-/**
- * @author: @dorianbaffier
- * @description: Avatar Picker
- * @version: 2.0.0
- * @date: 2026-10-14
- * @license: MIT
- * @website: https://kokonutui.com
- * @github: https://github.com/kokonut-labs/kokonutui
- */
+"use client";
 
 import { ArrowRight, Dices } from "lucide-react";
 import {
@@ -35,17 +25,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { cn } from "@/lib/utils";
-
-/* ----------------------------------------------------------------------------
- * Face generation
- *
- * Every avatar is a pure function of a seed string. The seed is hashed into a
- * PRNG, which picks continuous feature values (head proportions, hair, eyes,
- * brows, mouth) and a few colors from small muted palettes. Because features
- * are numbers rather than parts picked from a list, two faces can be blended,
- * which is what makes the live morph possible.
- * ------------------------------------------------------------------------- */
+import { cn } from "@/shared/lib/cn";
 
 type RGB = readonly [number, number, number];
 
@@ -112,7 +92,7 @@ export interface Face {
   skin: RGB;
   hair: RGB;
   shirt: RGB;
-  /** Plain-language summary, used for screen-reader labels. */
+
   description: string;
 }
 
@@ -161,7 +141,6 @@ function describe(shape: Face["shape"], bgName: string) {
   return `${face}, ${hair}${glasses}, ${mouth}, on ${bgName}`;
 }
 
-/** Deterministic face for a seed. Same seed, same face, server and client. */
 export function createFace(seed: string): Face {
   const r = mulberry32(hashString(seed));
   const bg = pick(BACKGROUNDS, r());
@@ -215,7 +194,7 @@ function lerpFace(a: Face, b: Face, t: number): Face {
   for (const key of SHAPE_KEYS) {
     shape[key] = lerp(a.shape[key], b.shape[key], t);
   }
-  // Colors stop at the target; only shapes may overshoot with the spring.
+
   const ct = Math.min(1, t);
   return {
     shape,
@@ -232,7 +211,6 @@ const rgb = (c: RGB, k = 1) =>
 
 const n = round2;
 
-/** Rounded blob: `square` blends between an ellipse and a squircle. */
 function blobPath(
   cx: number,
   cy: number,
@@ -285,13 +263,12 @@ function mouthPath(s: Face["shape"], cx: number, y: number) {
 
 export interface FaceArtProps {
   face: Face;
-  /** Pointer-follow offset for the eyes, in face units. */
+
   look?: { x: MotionValue<number>; y: MotionValue<number> };
   blinkRef?: RefObject<SVGGElement>;
   className?: string;
 }
 
-/** The face itself: one SVG, 100×100 units, every number rounded. */
 export function FaceArt({ face, look, blinkRef, className }: FaceArtProps) {
   const s = face.shape;
   const cx = 50;
@@ -310,7 +287,7 @@ export function FaceArt({ face, look, blinkRef, className }: FaceArtProps) {
       viewBox="12 14 76 76"
     >
       <rect fill={rgb(face.bg)} height="100" width="100" />
-      {/* Long hair sits behind the head. */}
+
       <path
         d={blobPath(
           cx,
@@ -426,10 +403,6 @@ export function FaceArt({ face, look, blinkRef, className }: FaceArtProps) {
 
 const MORPH = { type: "spring", bounce: 0.22, visualDuration: 0.42 } as const;
 
-/**
- * Renders the face for `seed` and, when the seed changes, eases every feature
- * from where it is now to the new values instead of crossfading.
- */
 function MorphingFace({
   seed,
   morph = true,
@@ -437,9 +410,9 @@ function MorphingFace({
 }: Omit<FaceArtProps, "face"> & { seed: string; morph?: boolean }) {
   const [face, setFace] = useState(() => createFace(seed));
   const shownRef = useRef(face);
-  // The seed whose face is fully on screen, or null mid-morph. Lets the
-  // effect skip a no-op morph on mount and after every spin lands, each of
-  // which would otherwise re-render the face every frame for nothing.
+
+
+
   const settledRef = useRef<string | null>(seed);
   const reduceMotion = useReducedMotion();
 
@@ -473,29 +446,25 @@ function MorphingFace({
   return <FaceArt face={face} {...rest} />;
 }
 
-/* ----------------------------------------------------------------------------
- * Picker
- * ------------------------------------------------------------------------- */
-
 export interface AvatarValue {
-  /** The name the faces are generated from. */
+
   displayName: string;
-  /** Which face for that name. Any integer works; each one is a new face. */
+
   variant: number;
 }
 
 export interface AvatarPickerProps {
-  /** Controlled value. */
+
   value?: AvatarValue;
-  /** Initial value when uncontrolled. */
+
   defaultValue?: Partial<AvatarValue>;
-  /** Called when the name changes or a face lands. */
+
   onChange?: (
     value: AvatarValue & { seed: string; description: string }
   ) => void;
-  /** Called by the submit button. */
+
   onComplete?: (value: AvatarValue & { seed: string }) => void;
-  /** Form field name; a hidden input carries the avatar seed. */
+
   name?: string;
   title?: string;
   description?: string;
@@ -507,7 +476,7 @@ const SLOT_COUNT = 5;
 const COIN = 128;
 const BEZEL = 176;
 const TICKS = 60;
-// One face per half turn. Dragging the coin its own width turns it half a turn.
+
 const DEG_PER_PX = 180 / COIN;
 const MAX_FLICK_STEPS = 10;
 const TAP_SLOP = 4;
@@ -516,14 +485,12 @@ const SHUFFLE_SPRING = { type: "spring", stiffness: 50, damping: 11 } as const;
 const FLY = { type: "spring", bounce: 0.18, visualDuration: 0.45 } as const;
 const MIN_NAME = 2;
 
-/** The seed string for a name and variant; feed it to `createFace`. */
 export function avatarSeed(displayName: string, variant: number) {
   return `${displayName.trim().toLowerCase()}:${variant}`;
 }
 
 const pad3 = (v: number) => String(((v % 1000) + 1000) % 1000).padStart(3, "0");
 
-// Bezel tick marks, rounded so server and client markup match.
 const TICK_LINES = Array.from({ length: TICKS }, (_, i) => {
   const a = (i / TICKS) * Math.PI * 2;
   const long = i % 5 === 0;
@@ -563,7 +530,6 @@ function useInView(ref: RefObject<HTMLElement>) {
   return active;
 }
 
-/** Eyes drift toward the pointer and blink now and then, only while visible. */
 function useLivingEyes(
   coinRef: RefObject<HTMLDivElement>,
   active: boolean
@@ -632,11 +598,6 @@ interface CoinProps {
   onPointerCancel: (e: PointerEvent<HTMLDivElement>) => void;
 }
 
-/**
- * The preview is a coin with real thickness: a stack of discs in 3D. It turns
- * around its vertical axis and swaps faces as it passes edge-on, so a spin
- * reads like a slot reel without any crossfade.
- */
 function Coin({
   layoutId,
   seed,
@@ -648,7 +609,7 @@ function Coin({
   coinRef,
   ...handlers
 }: CoinProps) {
-  // Fold the running angle into -90..90 so the front always faces us.
+
   const tilt = useTransform(angle, (a) => a - 180 * Math.round(a / 180));
   const transform = useTransform(tilt, (t) => `rotateY(${round2(t)}deg)`);
   const shade = useTransform(tilt, (t) => round2((Math.abs(t) / 90) * 0.35));
@@ -781,7 +742,6 @@ function releaseTarget(d: DragState, current: number, x: number, t: number) {
   return { target, velocity };
 }
 
-/** Drag the coin sideways to turn it; let go and it coasts with momentum. */
 function useDragSpin(spinner: Spinner, reduceMotion: boolean | null) {
   const drag = useRef<DragState | null>(null);
 
@@ -824,7 +784,7 @@ function useDragSpin(spinner: Spinner, reduceMotion: boolean | null) {
     }
     drag.current = null;
     const current = spinner.angle.get();
-    // A tap turns to the next face; a drag coasts on its release speed.
+
     const { target, velocity } = d.moved
       ? releaseTarget(d, current, e.clientX, e.timeStamp)
       : { target: Math.round(current / 180) + 1, velocity: 900 };
@@ -835,8 +795,8 @@ function useDragSpin(spinner: Spinner, reduceMotion: boolean | null) {
     }
   };
 
-  // The browser took the gesture (a vertical scroll that started on the
-  // coin): settle on the nearest face instead of treating it as a tap.
+
+
   const onPointerCancel = (e: PointerEvent<HTMLDivElement>) => {
     const d = drag.current;
     if (!d || d.id !== e.pointerId) {
@@ -854,12 +814,6 @@ function useDragSpin(spinner: Spinner, reduceMotion: boolean | null) {
   return { onPointerDown, onPointerMove, onPointerUp, onPointerCancel };
 }
 
-/**
- * Onboarding avatar picker. Faces are generated from the display name, morph
- * live as it is typed, and can be spun like a coin: drag or flick it sideways,
- * tap it, or press shuffle. Five slots keep options to compare; picking one
- * flies it into the preview and sends the previous face back to its slot.
- */
 export default function AvatarPicker({
   value,
   defaultValue,
@@ -892,7 +846,7 @@ export default function AvatarPicker({
   const latest = useRef({ displayName, variant, selected });
   latest.current = { displayName, variant, selected };
 
-  // Keep the selected slot in step with a controlled variant.
+
   const controlledVariant = value?.variant;
   useEffect(() => {
     if (controlledVariant === undefined) {
@@ -1038,7 +992,7 @@ export default function AvatarPicker({
                   />
                 ))}
               </motion.svg>
-              {/* Fixed index mark the bezel turns under. */}
+
               <div
                 aria-hidden="true"
                 className="absolute top-0 left-1/2 h-3 w-0.5 -translate-x-1/2 rounded-full bg-zinc-900 dark:bg-zinc-100"
@@ -1081,7 +1035,7 @@ export default function AvatarPicker({
                     aria-label={`Вариант ${i + 1}: ${createFace(slotSeed).description}`}
                     aria-pressed={isSelected}
                     className="group/slot relative size-10 rounded-full outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-zinc-100 dark:focus-visible:ring-offset-zinc-950"
-                    // biome-ignore lint/suspicious/noArrayIndexKey: slots are fixed positions.
+
                     key={i}
                     onClick={() => choose(i)}
                     onFocus={() => setFocusIndex(i)}
@@ -1092,7 +1046,7 @@ export default function AvatarPicker({
                     tabIndex={i === focusIndex ? 0 : -1}
                     type="button"
                   >
-                    {/* The socket stays put; the face flies in and out of it. */}
+
                     <span
                       aria-hidden="true"
                       className={cn(

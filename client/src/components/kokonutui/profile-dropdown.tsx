@@ -1,15 +1,5 @@
 "use client";
 
-/**
- * @author: @dorianbaffier
- * @description: Account Menu
- * @version: 2.0.0
- * @date: 2026-10-14
- * @license: MIT
- * @website: https://kokonutui.com
- * @github: https://github.com/kokonut-labs/kokonutui
- */
-
 import {
   Check,
   ChevronLeft,
@@ -44,20 +34,20 @@ import {
   useRef,
   useState,
 } from "react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/cn";
 import { createFace, FaceArt } from "./avatar-picker";
 
 export interface Account {
   id: string;
   name: string;
   email: string;
-  /** Shown in the avatar. Defaults to the first letters of `name`. */
+
   initials?: string;
-  /** Optional image shown instead of initials. */
+
   avatarUrl?: string;
-  /** Optional generated face seed from Kokonut UI Avatar Picker. */
+
   avatarSeed?: string;
-  /** Plain label shown in the menu header, such as "Pro". */
+
   plan?: string;
 }
 
@@ -67,11 +57,11 @@ export type AccountTheme = "light" | "dark" | "system";
 export interface ProfileMenuItem {
   label: string;
   icon?: ReactNode;
-  /** Quiet text on the right, such as a plan name or a shortcut. */
+
   value?: string;
-  /** Renders the item as a link. Without it the item is a button. */
+
   href?: string;
-  /** Opens `href` in a new tab. */
+
   external?: boolean;
   onSelect?: () => void;
 }
@@ -82,16 +72,16 @@ interface ProfileDropdownProps
   defaultAccountId?: string;
   onAccountChange?: (account: Account) => void;
   onAddAccount?: () => void;
-  /** Menu entries between the settings rows and Switch account. */
+
   items?: ProfileMenuItem[];
-  /** Controlled theme. Leave it out to keep the choice in local state. */
+
   theme?: AccountTheme;
   defaultTheme?: AccountTheme;
   onThemeChange?: (theme: AccountTheme) => void;
   status?: AccountStatus;
   defaultStatus?: AccountStatus;
   onStatusChange?: (status: AccountStatus) => void;
-  /** Called once Sign out has been held for `holdDuration` ms. */
+
   onSignOut?: () => void;
   holdDuration?: number;
   showStatus?: boolean;
@@ -184,7 +174,7 @@ function initialsOf(account: Account) {
 }
 
 function viaOf(event: MouseEvent): Via {
-  // A click fired by Enter or Space carries no pointer detail.
+
   return event.detail === 0 ? "keyboard" : "pointer";
 }
 
@@ -215,7 +205,6 @@ function rowTarget(items: HTMLElement[], current: HTMLElement, step: number) {
   );
 }
 
-/** Where arrow keys move focus: rows go up and down, radios left and right. */
 function nextTarget(
   items: HTMLElement[],
   active: Element | null,
@@ -289,11 +278,6 @@ function Avatar({
   );
 }
 
-/**
- * The avatar, name and email. Rendered in the trigger while the menu is
- * closed and in the menu header while it is open; shared layout ids let the
- * three pieces travel between the two places.
- */
 function Identity({
   uid,
   shared,
@@ -460,7 +444,7 @@ function HoldSignOut({
     >
       {label}
       <span className="sr-only">, press and hold to confirm</span>
-      {/* The fill: an inverted copy of the row, revealed left to right. */}
+
       <span
         aria-hidden="true"
         className="absolute inset-0 flex items-center gap-2.5 rounded-[10px] bg-zinc-900 px-2.5 text-zinc-50 dark:bg-zinc-100 dark:text-zinc-900"
@@ -673,9 +657,9 @@ export default function ProfileDropdown({
   const closeSeq = useRef(0);
   const targetH = useRef(0);
 
-  // The panel's visible box. The two surface layers (border and fill) and the
-  // content all clip to it, so the menu grows out of the trigger's own
-  // rectangle without any layout work per frame.
+
+
+
   const w = useMotionValue(0);
   const h = useMotionValue(0);
   const pageX = useMotionValue(0);
@@ -742,9 +726,9 @@ export default function ProfileDropdown({
     closeMenu(viaOf(event), true);
   };
 
-  // Opening: size the clip to the trigger, then spring it out to the menu.
-  // A keyboard open skips straight to the end.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: runs once per open
+
+
+
   useLayoutEffect(() => {
     const trigger = triggerRef.current;
     const main = mainRef.current;
@@ -776,8 +760,8 @@ export default function ProfileDropdown({
     targets[openIntent.current.focus]?.focus({ preventScroll: true });
   }, [openSeq]);
 
-  // Switching pages: push sideways and spring the height to the new page.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: keyed on page
+
+
   useEffect(() => {
     const el = pageEl(page);
     if (phaseRef.current !== "open" || !el) {
@@ -807,8 +791,8 @@ export default function ProfileDropdown({
     }
   }, [page]);
 
-  // Keep the height in step if a page's content changes size while open.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: observers read refs
+
+
   useEffect(() => {
     if (phase !== "open") {
       return;
@@ -833,8 +817,8 @@ export default function ProfileDropdown({
     return () => observer.disconnect();
   }, [phase, page]);
 
-  // A press anywhere outside closes, with the morph.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: closeMenu reads refs
+
+
   useEffect(() => {
     if (phase !== "open") {
       return;
@@ -878,7 +862,7 @@ export default function ProfileDropdown({
     }
   };
 
-  // Hovering an item focuses it, so pointer and keyboard share one highlight.
+
   const onPanelPointerMove = (event: PointerEvent<HTMLDivElement>) => {
     if (event.pointerType !== "mouse") {
       return;

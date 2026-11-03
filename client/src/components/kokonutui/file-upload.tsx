@@ -1,15 +1,5 @@
 "use client";
 
-/**
- * @author: @dorianbaffier
- * @description: File Upload
- * @version: 2.0.0
- * @date: 2026-10-16
- * @license: MIT
- * @website: https://kokonutui.com
- * @github: https://github.com/kokonut-labs/kokonutui
- */
-
 import { RotateCw, Upload, X } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import {
@@ -22,7 +12,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/cn";
 
 export interface FileError {
   message: string;
@@ -30,37 +20,33 @@ export interface FileError {
 }
 
 export interface UploadHelpers {
-  /** Report upload progress from 0 to 100. */
+
   onProgress: (percent: number) => void;
-  /** Aborted when the row is removed or the component unmounts. */
+
   signal: AbortSignal;
 }
 
 export interface FileUploadProps {
-  /**
-   * Uploads one file. Called once per file, a few at a time. Resolve to mark
-   * the row done, reject to show the error with a Retry button. When omitted,
-   * uploads are simulated over `uploadDelay`.
-   */
+
   onUpload?: (file: File, helpers: UploadHelpers) => Promise<void>;
   onUploadSuccess?: (file: File) => void;
-  /** Called for validation errors and failed uploads. */
+
   onUploadError?: (error: FileError, file: File) => void;
-  /** Called with every uploaded file once nothing is queued or in flight. */
+
   onComplete?: (files: File[]) => void;
-  /** Called when a row is removed (cancelling its upload if needed). */
+
   onFileRemove?: (file: File) => void;
-  /** MIME types ("image/png"), wildcards ("image/*") or extensions (".pdf"). */
+
   acceptedFileTypes?: string[];
-  /** Maximum size of each file in bytes. Defaults to 5 MB. */
+
   maxFileSize?: number;
-  /** Accept several files at once. Defaults to true. */
+
   multiple?: boolean;
-  /** Maximum number of files in the list. Defaults to 5. */
+
   maxFiles?: number;
-  /** Simulated upload duration per file in ms, used without `onUpload`. */
+
   uploadDelay?: number;
-  /** Simulated uploads only: the first attempt of every third file fails. */
+
   simulateFailure?: boolean;
   validateFile?: (file: File) => FileError | null;
   className?: string;
@@ -84,7 +70,7 @@ const CONCURRENCY = 3;
 const SIMULATED_TICK = 80;
 const EASE_OUT = [0.23, 1, 0.32, 1] as const;
 const FILE_SIZES = ["B", "KB", "MB", "GB", "TB"] as const;
-// Module constant, so the default does not change identity every render.
+
 const NO_ACCEPTED_TYPES: string[] = [];
 
 const formatBytes = (bytes: number): string => {
@@ -99,8 +85,6 @@ const formatBytes = (bytes: number): string => {
   return `${value >= 10 || i === 0 ? Math.round(value) : Number(value.toFixed(1))} ${FILE_SIZES[i]}`;
 };
 
-// Accepts exact MIME types ("image/png"), wildcards ("image/*") and
-// extensions (".pdf"), like the input's `accept` attribute.
 const matchesAcceptedType = (file: File, acceptedType: string): boolean => {
   const accepted = acceptedType.trim().toLowerCase();
   if (!accepted) {
@@ -116,7 +100,6 @@ const matchesAcceptedType = (file: File, acceptedType: string): boolean => {
   return fileType === accepted;
 };
 
-// ".pdf" -> "PDF", "image/svg+xml" -> "SVG", "image/*" -> "images".
 const describeAcceptedType = (acceptedType: string): string => {
   const accepted = acceptedType.trim();
   if (accepted.startsWith(".")) {
@@ -167,7 +150,6 @@ const countDraggedFiles = (dataTransfer: DataTransfer): number => {
   return count;
 };
 
-// Default upload: advances in uneven steps, like a real network would.
 const simulateUpload = (
   { onProgress, signal }: UploadHelpers,
   duration: number,
@@ -460,7 +442,7 @@ const QueueRow = ({
           </button>
         </div>
 
-        {/* The row's hairline divider doubles as its progress bar. */}
+
         <div className="absolute inset-x-1 bottom-0 h-px bg-zinc-100 dark:bg-zinc-800/80">
           <div
             aria-label={`Uploading ${name}`}
@@ -469,7 +451,7 @@ const QueueRow = ({
             aria-valuenow={Math.round(item.progress)}
             className={cn(
               "h-full origin-left transition-[transform,opacity,background-color] duration-200 ease-linear",
-              // A retry starts from zero at once instead of rewinding.
+
               item.progress === 0 && "transition-none",
               item.status === "done" &&
                 "bg-emerald-500 opacity-0 delay-300 duration-300 ease-out dark:bg-emerald-400",
@@ -514,7 +496,7 @@ export default function FileUpload({
   const previewUrls = useRef(new Map<string, string>());
   const wasBusy = useRef(false);
 
-  // Latest callbacks, read from async upload code without re-running effects.
+
   const latest = useRef({
     onUpload,
     onUploadSuccess,
@@ -599,7 +581,7 @@ export default function FileUpload({
     [updateItem]
   );
 
-  // Scheduler: keep up to CONCURRENCY uploads in flight.
+
   useEffect(() => {
     const active = items.filter((item) => item.status === "uploading").length;
     const toStart = items
@@ -622,12 +604,12 @@ export default function FileUpload({
     }
   }, [items, runUpload]);
 
-  // Settle: report once nothing is queued or in flight.
+
   useEffect(() => {
     const busy = items.some(
       (item) => item.status === "queued" || item.status === "uploading"
     );
-    // Cancelling everything clears the list; that is not a completion.
+
     if (wasBusy.current && !busy && items.length > 0) {
       latest.current.onComplete?.(
         items.filter((item) => item.status === "done").map((item) => item.file)
@@ -636,7 +618,7 @@ export default function FileUpload({
     wasBusy.current = busy;
   }, [items]);
 
-  // Abort uploads and free previews on unmount.
+
   useEffect(() => {
     const ctrl = controllers.current;
     const urls = previewUrls.current;
@@ -652,8 +634,8 @@ export default function FileUpload({
     };
   }, []);
 
-  // A file dragged anywhere over the window wakes the drop zone, and a drop
-  // that misses it does not make the browser navigate away to the file.
+
+
   useEffect(() => {
     let depth = 0;
     const onEnter = (e: globalThis.DragEvent) => {
@@ -775,8 +757,8 @@ export default function FileUpload({
     [items, onFileRemove]
   );
 
-  // The clicked button leaves with its row, so focus returns to the drop
-  // zone instead of falling back to the page.
+
+
   const removeAndRefocus = useCallback(
     (id: string) => {
       removeItem(id);

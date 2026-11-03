@@ -1,13 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { animate, createScope, stagger } from 'animejs';
 import { ArrowUpRight, Plus, UsersRound } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { employeeApi } from '../../entities/employee/api/employeeApi';
-import { EmployeeCard } from '../../entities/employee/ui/EmployeeCard';
-import type { CreateEmployeePayload, Employee } from '../../entities/employee/model/types';
-import { AddEmployeeForm } from '../../features/employees/ui/AddEmployeeForm';
-import { EmployeeToolbar } from '../../features/employees/ui/EmployeeToolbar';
-import { Header } from '../../widgets/header/Header';
+import { cn } from '../../shared/lib/cn';
+import { employeeApi, EmployeeCard, type CreateEmployeePayload, type Employee } from '../../entities/employee';
+import { AddEmployeeForm, EmployeeToolbar } from '../../features/employees';
+import { Header } from '../../widgets/header';
 import { getErrorMessage } from '../../shared/api/errors';
 import { ApiError } from '../../shared/api/client';
 import styles from './EmployeesPage.module.css';

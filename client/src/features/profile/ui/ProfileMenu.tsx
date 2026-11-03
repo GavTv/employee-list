@@ -3,10 +3,9 @@ import { Camera, ImagePlus, Sparkles, Trash2 } from 'lucide-react';
 import ProfileDropdown, { type Account, type ProfileMenuItem } from '@/components/kokonutui/profile-dropdown';
 import AvatarPicker from '@/components/kokonutui/avatar-picker';
 import FileUpload, { type UploadHelpers } from '@/components/kokonutui/file-upload';
-import { userApi } from '@/entities/user/api/userApi';
-import type { UserProfile } from '@/entities/user/model/types';
-import { cn } from '@/lib/utils';
-import './ProfileMenu.css';
+import { userApi, type UserProfile } from '@/entities/user';
+import { cn } from '@/shared/lib/cn';
+import styles from './ProfileMenu.module.css';
 
 type MediaMode = 'upload' | 'generated';
 
@@ -89,21 +88,21 @@ export function ProfileMenu({ onLogout }: { onLogout: () => void }) {
       defaultStatus="online"
       defaultTheme="light"
       compactTrigger
-      className="profile-menu-root"
+      className={styles.profileMenuRoot}
       holdDuration={500}
       items={items}
       onSignOut={onLogout}
       showStatus={false}
       showTheme={false}
     />
-    {mediaMode && <div className="modal-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) setMediaMode(null); }}>
-      <section className="modal kokonut-upload-modal" role="dialog" aria-modal="true" aria-labelledby="avatar-upload-title">
-        <button className="modal-close" type="button" onClick={() => setMediaMode(null)} aria-label="Закрыть">×</button>
+    {mediaMode && <div className={styles.modalBackdrop} onMouseDown={(event) => { if (event.target === event.currentTarget) setMediaMode(null); }}>
+      <section className={`${styles.modal} ${styles.kokonutUploadModal}`} role="dialog" aria-modal="true" aria-labelledby="avatar-upload-title">
+        <button className={styles.modalClose} type="button" onClick={() => setMediaMode(null)} aria-label="Закрыть">×</button>
         <span className="eyebrow">ВАШ ПРОФИЛЬ</span>
         <h2 id="avatar-upload-title">{mediaMode === 'generated' ? 'Создать аватар' : 'Загрузить фото'}</h2>
-        <div className="profile-media-tabs" role="tablist" aria-label="Способ выбора изображения">
-        <button type="button" role="tab" aria-selected={mediaMode === 'generated'} className={cn(mediaMode === 'generated' && 'active')} onClick={() => { setError(''); setMediaMode('generated'); }}><Sparkles size={15}/> Создать аватар</button>
-        <button type="button" role="tab" aria-selected={mediaMode === 'upload'} className={cn(mediaMode === 'upload' && 'active')} onClick={() => { setError(''); setMediaMode('upload'); }}><Camera size={15}/> Загрузить фото</button>
+        <div className={styles.profileMediaTabs} role="tablist" aria-label="Способ выбора изображения">
+        <button type="button" role="tab" aria-selected={mediaMode === 'generated'} className={cn(styles.profileMediaTab, mediaMode === 'generated' && styles.active)} onClick={() => { setError(''); setMediaMode('generated'); }}><Sparkles size={15}/> Создать аватар</button>
+        <button type="button" role="tab" aria-selected={mediaMode === 'upload'} className={cn(styles.profileMediaTab, mediaMode === 'upload' && styles.active)} onClick={() => { setError(''); setMediaMode('upload'); }}><Camera size={15}/> Загрузить фото</button>
         </div>
         {mediaMode === 'generated' ? <AvatarPicker
           defaultValue={{ displayName: profile?.email.split('@')[0] || 'Сотрудник', variant: 0 }}
@@ -119,7 +118,7 @@ export function ProfileMenu({ onLogout }: { onLogout: () => void }) {
           multiple={false}
           onUpload={uploadPhoto}
         />}
-        {error && <p className="form-error" role="alert">{error}</p>}
+        {error && <p className={`form-error ${styles.error}`} role="alert">{error}</p>}
       </section>
     </div>}
   </>;

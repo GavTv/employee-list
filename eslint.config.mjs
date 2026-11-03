@@ -25,7 +25,6 @@ export default defineConfig([
     },
   },
   {
-    // Keep the third-party Kokonut components intact; their animation code has intentional ref/state patterns.
     files: ['client/src/components/kokonutui/**/*.{ts,tsx}'],
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',

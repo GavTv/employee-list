@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react';
 
 import styles from './AuthForm.module.css';
-import { cn } from '@/lib/utils';
+import { cn } from '@/shared/lib/cn';
 import { authApi } from '../api/authApi';
 import { getErrorMessage } from '../../../shared/api/errors';
 

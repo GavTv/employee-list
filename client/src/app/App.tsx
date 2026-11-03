@@ -1,9 +1,9 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
-import { userApi } from '../entities/user/api/userApi';
+import { userApi } from '../entities/user';
 import { getToken, setToken } from '../shared/api/token';
 
-const AuthPage = lazy(() => import('../pages/auth-page/AuthPage').then(({ AuthPage: page }) => ({ default: page })));
-const EmployeesPage = lazy(() => import('../pages/employees-page/EmployeesPage').then(({ EmployeesPage: page }) => ({ default: page })));
+const AuthPage = lazy(() => import('../pages/auth-page').then(({ AuthPage: page }) => ({ default: page })));
+const EmployeesPage = lazy(() => import('../pages/employees-page').then(({ EmployeesPage: page }) => ({ default: page })));
 
 export function App() {
   const [token, updateToken] = useState<string | null>(() => getToken());

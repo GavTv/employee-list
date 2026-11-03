@@ -1,7 +1,8 @@
 import { useState, type FormEvent } from 'react';
 
 import styles from './AddEmployeeForm.module.css';
-import { cn } from '@/lib/utils';import type { CreateEmployeePayload } from '../../../entities/employee/model/types';
+import { cn } from '@/shared/lib/cn';
+import type { CreateEmployeePayload } from '@/entities/employee';
 
 export function AddEmployeeForm({ onSubmit, onClose }: { onSubmit: (payload: CreateEmployeePayload) => Promise<void>; onClose: () => void }) {
   const [form, setForm] = useState<CreateEmployeePayload>({ fullName: '', position: '', department: '' });

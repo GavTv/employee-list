@@ -1,5 +1,5 @@
 import { ArrowDownRight, ArrowUpRight, Asterisk, ScanLine } from 'lucide-react';
-import { AuthForm } from '../../features/auth/ui/AuthForm';
+import { AuthForm } from '../../features/auth';
 import styles from './AuthPage.module.css';
 
 type Props = {

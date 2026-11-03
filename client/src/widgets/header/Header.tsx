@@ -1,4 +1,4 @@
-import { ProfileMenu } from '../../features/profile/ui/ProfileMenu';
+import { ProfileMenu } from '../../features/profile';
 import { UsersRound } from 'lucide-react';
 
 import styles from './Header.module.css';
