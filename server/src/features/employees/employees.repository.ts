@@ -48,7 +48,9 @@ export async function findEmployees(
 
 export async function findDepartments(): Promise<string[]> {
   const rows = await findMany<{ department: string }>(
-    'SELECT DISTINCT department FROM employees ORDER BY LOWER(department) ASC',
+    `SELECT department
+     FROM (SELECT DISTINCT department FROM employees) AS departments
+     ORDER BY LOWER(department) ASC`,
   );
 
   return rows.map((row) => row.department);
